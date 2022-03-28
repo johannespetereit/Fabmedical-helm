@@ -1,0 +1,14 @@
+connectionString: ""
+acr: ""
+api:
+  replicas: 2
+  resources:
+    requests:
+        cpu: 100m
+        memory: 128Mi
+web:
+  replicas: 4
+  resources:
+    requests:
+        cpu: 125m
+        memory: 128Mi

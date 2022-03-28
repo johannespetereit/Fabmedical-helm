@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+      app: api
+  name: api
+spec:
+  replicas: {{ .Values.api.replicas }}
+  selector:
+    matchLabels:
+      app: api
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+          app: api
+      name: api
+    spec:
+      containers:
+      - image: {{ .Values.acr}}.azurecr.io/content-api
+        env:
+          - name: MONGODB_CONNECTION
+            valueFrom:
+              secretKeyRef:
+                name: cosmosdb
+                key: db
+        name: api
+        imagePullPolicy: Always
+        livenessProbe:
+          httpGet:
+              path: /
+              port: 3001
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 10
+          failureThreshold: 3
+        ports:
+          - containerPort: 3001
+            protocol: TCP
+        resources:
+          {{- toYaml .Values.api.resources | nindent 10 }}
+        securityContext:
+          privileged: false
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30    
